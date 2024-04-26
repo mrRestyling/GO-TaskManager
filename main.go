@@ -13,7 +13,7 @@ import (
 
 func main() {
 
-	db, err := database.New()
+	db, err := database.CreateDB()
 	if err != nil {
 		log.Println(err)
 	}
