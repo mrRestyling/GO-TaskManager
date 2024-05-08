@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"start/internal/database"
+	"start/internal/handlers"
 )
 
 // func getPort(p string) string {
@@ -19,9 +20,10 @@ func main() {
 	}
 	defer db.Close()
 
-	webDir := "./web"
+	http.Handle("/", http.FileServer(http.Dir("./web")))
 
-	http.Handle("/", http.FileServer(http.Dir(webDir)))
+	http.HandleFunc("/api/nextdate", handlers.NextDateHandler)
+	http.HandleFunc("/api/task", handlers.TaskHandler)
 
 	err = http.ListenAndServe("localhost:7540", nil)
 	if err != nil {
