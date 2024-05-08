@@ -20,10 +20,16 @@ func main() {
 	}
 	defer db.Close()
 
+	handler := &handlers.Handler{Db: db}
 	http.Handle("/", http.FileServer(http.Dir("./web")))
 
 	http.HandleFunc("/api/nextdate", handlers.NextDateHandler)
-	http.HandleFunc("/api/task", handlers.TaskHandler)
+	http.HandleFunc("/api/task", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			handler.TaskHandler(w, r)
+		}
+	})
 
 	err = http.ListenAndServe("localhost:7540", nil)
 	if err != nil {

@@ -5,58 +5,100 @@ import (
 	"net/http"
 	"time"
 
+	"start/internal/database"
 	"start/internal/date"
-	"start/internal/storage"
+	"start/internal/models"
 )
 
-func TaskHandler(w http.ResponseWriter, r *http.Request) {
+type Handler struct {
+	Db *database.Database
+}
 
-	switch r.Method {
-	case http.MethodPost:
-		// Декодируем данные из тела запроса в переменную таск
-		var task storage.Task
-		err := json.NewDecoder(r.Body).Decode(&task)
+func (h *Handler) TaskHandler(w http.ResponseWriter, r *http.Request) {
+
+	// Декодируем данные из тела запроса в переменную таск
+	var task models.Task
+	err := json.NewDecoder(r.Body).Decode(&task)
+	if err != nil {
+		http.Error(w, "Неверное тело запроса", http.StatusBadRequest)
+		return
+	}
+	// Поле title обязательное
+	// Возврат json ошибки (пересмотреть)
+	if task.Title == "" {
+		response := map[string]string{
+			"error": "Заголовок не может быть пустым",
+		}
+		jsonResponse, err := json.Marshal(response)
 		if err != nil {
-			http.Error(w, "Неверное тело запроса", http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		// Поле title обязательное
-		if task.Title == "" {
-			http.Error(w, "Заголовок не может быть пустым", http.StatusBadRequest)
+
+		w.Header().Set("Content-Type", "application/json") // Указываем, что возвращаем JSON
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write(jsonResponse)
+		return
+	}
+	// Проверяем, что дата указана в формате 20060102 и что функция time.Parse() корректно её распознаёт.
+	if task.Date != "" {
+		_, err := time.Parse("20060102", task.Date)
+		if err != nil {
+			errorResponse := map[string]string{
+				"error": "Неправильный формат даты",
+			}
+			jsonResponse, _ := json.Marshal(errorResponse)
+
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write(jsonResponse)
 			return
 		}
-		// Проверяем, что дата указана в формате 20060102 и что функция time.Parse() корректно её распознаёт.
-		if task.Date != "" {
-			_, err := time.Parse("20060102", task.Date)
+	}
+
+	// поле date не указано или содержит пустую строку, берётся сегодняшнее число：
+	if task.Date == "" {
+		task.Date = time.Now().Format("20060102")
+	}
+
+	// Если дата меньше сегодняшнего числа, есть два варианта:
+	// 1. если правило повторения не указано или равно пустой строке, подставляется сегодняшнее число;
+	// 2. при указанном правиле повторения вам нужно вычислить и записать в таблицу дату выполнения, которая будет больше сегодняшнего числа.
+	//    Для этого используйте функцию NextDate(), которую вы уже написали раньше.
+
+	if task.Date < time.Now().Format("20060102") {
+		if task.Repeat == "" {
+			task.Date = time.Now().Format("20060102")
+		} else if task.Repeat != "" {
+			task.Date, err = date.NextDate(time.Now(), task.Date, task.Repeat)
 			if err != nil {
-				http.Error(w, "Неправильный формат даты", http.StatusBadRequest)
+				errorResponse := map[string]string{
+					"error": "Неправильно задано повторение",
+				}
+				jsonResponse, _ := json.Marshal(errorResponse)
+
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusBadRequest)
+				w.Write(jsonResponse)
 				return
 			}
 		}
-
-		// поле date не указано или содержит пустую строку, берётся сегодняшнее число：
-		if task.Date == "" {
-			task.Date = time.Now().Format("20060102")
-		}
-
-		// Если дата меньше сегодняшнего числа, есть два варианта:
-		// 1. если правило повторения не указано или равно пустой строке, подставляется сегодняшнее число;
-		// 2. при указанном правиле повторения вам нужно вычислить и записать в таблицу дату выполнения, которая будет больше сегодняшнего числа.
-		//    Для этого используйте функцию NextDate(), которую вы уже написали раньше.
-
-		if task.Date < time.Now().Format("20060102") {
-			if task.Repeat == "" {
-				task.Date = time.Now().Format("20060102")
-			} else if task.Repeat != "" {
-				task.Date, err = date.NextDate(time.Now(), task.Date, task.Repeat)
-				if err != nil {
-					http.Error(w, "Неправильно задано повторение", http.StatusBadRequest)
-					return
-				}
-
-			}
-		}
-
 	}
 
+	id, err := h.Db.AddTask(task)
+	if err != nil {
+		http.Error(w, "Не удалось добавить задачу", http.StatusBadRequest)
+		return
+	}
+	// w.Write([]byte(fmt.Sprintf("%d", id))) // пишем ответ в тело запроса,
+	w.Header().Set("Content-Type", "application/json") // устанавливаем заголовок, чтобы показать, что это JSON.
+	// почитать про методы (.)
+	w.WriteHeader(http.StatusOK)
+
+	// тут не надо
+	err = json.NewEncoder(w).Encode(map[string]int{"id": id})
+	if err != nil {
+		http.Error(w, "Failed to encode JSON", http.StatusInternalServerError)
+		return
+	}
 }
