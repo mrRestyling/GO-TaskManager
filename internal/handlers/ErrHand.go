@@ -11,6 +11,9 @@ var (
 	errWrongRepeatFormat = errors.New("неправильный формат повтора")
 	errWrongTitleFormat  = errors.New("неправильный формат заголовка")
 	errPostId            = errors.New("не удалось добавить задачу по id")
+	errGetId             = errors.New("не удалось получить задачу по id")
+	errGetTasks          = errors.New("не указан идентификатор задач")
+	errWrongTaskIDFormat = errors.New("неверный формат идентификатора задачи")
 )
 
 func ResponseWithErrorJSON(w http.ResponseWriter, status int, err error) {

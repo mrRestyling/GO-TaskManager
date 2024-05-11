@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 	"start/internal/models"
 )
@@ -14,7 +13,7 @@ type TaskResponse struct {
 func (h *Handler) GetTasks(w http.ResponseWriter, r *http.Request) {
 	tasks, err := h.Db.GetAllTasks()
 	if err != nil {
-		ResponseWithErrorJSON(w, http.StatusInternalServerError, errors.New("не удалось получить задачи"))
+		ResponseWithErrorJSON(w, http.StatusInternalServerError, errGetId)
 		// http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
