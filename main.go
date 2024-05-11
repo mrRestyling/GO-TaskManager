@@ -28,8 +28,11 @@ func main() {
 		switch r.Method {
 		case http.MethodPost:
 			handler.TaskHandler(w, r)
+			// case http.MethodGet:
+			// 	handler.GetTaskByID(w, r)
 		}
 	})
+	http.HandleFunc("/api/tasks", handler.GetTasks)
 
 	err = http.ListenAndServe("localhost:7540", nil)
 	if err != nil {

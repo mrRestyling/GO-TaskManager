@@ -58,3 +58,23 @@ func (d *Database) AddTask(task models.Task) (int, error) {
 
 	return int(id), nil
 }
+
+func (d *Database) GetAllTasks() ([]models.Task, error) {
+	tasks := []models.Task{}
+
+	rows, err := d.Db.Query(`SELECT * FROM scheduler ORDER BY date ASC LIMIT 10`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() { // ?? метод для перебора всех строк
+		task := models.Task{}
+		err = rows.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
+		if err != nil {
+			return nil, err
+		}
+		tasks = append(tasks, task)
+	}
+	return tasks, nil
+}
