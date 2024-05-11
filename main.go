@@ -34,7 +34,7 @@ func main() {
 			handler.UpdateTask(w, r)
 		}
 	})
-	// http.HandleFunc("/api/tasks/done", handlers.DoneTasks)
+	http.HandleFunc("/api/task/done", handler.DoneTask)
 	http.HandleFunc("/api/tasks", handler.GetTasks)
 
 	err = http.ListenAndServe("localhost:7540", nil)

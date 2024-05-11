@@ -27,7 +27,7 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 		}
 
 		days, err := strconv.Atoi(repeatParts[1])
-		if err != nil || days >= 401 {
+		if err != nil || days > 400 {
 			return "", errors.New("недопустимое количество дней или неверный формат числа")
 		}
 

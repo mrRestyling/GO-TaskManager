@@ -105,4 +105,11 @@ func (d *Database) UpdateTaskDB(task models.Task) error {
 	return nil
 }
 
-// func (d *Database) DoneTasks() ([]models.Task, error) {
+func (d *Database) DoneTasksDB(id int) error {
+
+	_, err := d.Db.Exec(`DELETE FROM scheduler WHERE id = ?`, id)
+	if err != nil {
+		return errors.New("ошибка при удалении задачи")
+	}
+	return nil
+}
