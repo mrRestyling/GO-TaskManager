@@ -32,6 +32,8 @@ func main() {
 			handler.GetTaskByID(w, r)
 		case http.MethodPut:
 			handler.UpdateTask(w, r)
+		case http.MethodDelete:
+			handler.DeleteTask(w, r)
 		}
 	})
 	http.HandleFunc("/api/task/done", handler.DoneTask)
