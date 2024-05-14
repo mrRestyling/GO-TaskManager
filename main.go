@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 	"start/internal/database"
 	"start/internal/handlers"
 )
@@ -13,6 +14,13 @@ import (
 // }
 
 func main() {
+
+	// *** Задание со звездочкой, переменная окружения
+	port := os.Getenv("TODO_PORT")
+	if port == "" {
+		port = "7540"
+	}
+	// ***
 
 	db, err := database.New()
 	if err != nil {
@@ -39,7 +47,7 @@ func main() {
 	http.HandleFunc("/api/task/done", handler.DoneTask)
 	http.HandleFunc("/api/tasks", handler.GetTasks)
 
-	err = http.ListenAndServe("localhost:7540", nil)
+	err = http.ListenAndServe("localhost:"+port, nil)
 	if err != nil {
 		panic(err)
 	}

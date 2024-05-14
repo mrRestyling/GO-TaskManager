@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"os"
 	"start/internal/models"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -16,7 +17,15 @@ type Database struct {
 }
 
 func New() (*Database, error) {
-	db, err := sql.Open("sqlite3", "scheduler.db")
+
+	// *** Задание со звездочкой, переменная окружения
+	fileName := os.Getenv("TODO_DBFILE")
+	if fileName == "" {
+		fileName = "scheduler.db"
+	}
+	// ***
+
+	db, err := sql.Open("sqlite3", fileName)
 	if err != nil {
 		return nil, err
 	}
