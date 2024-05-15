@@ -122,3 +122,43 @@ func (d *Database) DoneTasksDB(id int) error {
 	}
 	return nil
 }
+
+func (d *Database) SearchWordDB(title string) ([]models.Task, error) {
+	tasks := []models.Task{}
+
+	rows, err := d.Db.Query(`SELECT * FROM scheduler WHERE title LIKE ? OR comment LIKE ? ORDER BY date LIMIT ?`, "%"+title+"%", "%"+title+"%", count)
+	if err != nil {
+		return tasks, err
+	}
+	defer rows.Close()
+
+	for rows.Next() { // ?? метод для перебора всех строк
+		task := models.Task{}
+		err = rows.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
+		if err != nil {
+			return tasks, err
+		}
+		tasks = append(tasks, task)
+	}
+	return tasks, nil
+}
+
+func (d *Database) SearchDateDB(date string) ([]models.Task, error) {
+	tasks := []models.Task{}
+
+	rows, err := d.Db.Query(`SELECT * FROM scheduler WHERE date = ? LIMIT ?`, date, count)
+	if err != nil {
+		return tasks, err
+	}
+	defer rows.Close()
+
+	for rows.Next() { // ?? метод для перебора всех строк
+		task := models.Task{}
+		err = rows.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
+		if err != nil {
+			return tasks, err
+		}
+		tasks = append(tasks, task)
+	}
+	return tasks, nil
+}
