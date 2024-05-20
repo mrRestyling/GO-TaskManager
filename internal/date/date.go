@@ -113,38 +113,60 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 	case "m":
 		return "", errors.New("неподдерживаемый формат")
 	// case "m":
-	// 	if len(repeatParts) < 2 {
-	// 		return "", errors.New("недостаточно аргументов для формата месяца")
-	// 	}
+	// 	switch {
+	// 	case len(repeatParts) == 2 || len(repeatParts) == 3:
 
-	// 	dayArgs := strings.Split(repeatParts[0], ",")
-	// 	monthArgs := strings.Split(repeatParts[1], ",")
-
-	// 	if len(dayArgs) == 0 || len(monthArgs) == 0 {
-	// 		return "", errors.New("недопустимый формат дня или месяца")
-	// 	}
-
-	// 	for _, dayStr := range dayArgs {
-	// 		day, err := strconv.Atoi(dayStr)
-	// 		if err != nil {
-	// 			return "", errors.New("неверный формат дня месяца")
+	// 		dayArgs := strings.Split(repeatParts[1], ",")
+	// 		var dayDone []int
+	// 		for _, dayInMonthSTR := range dayArgs {
+	// 			dayInMonthINT, err := strconv.Atoi(dayInMonthSTR)
+	// 			if err != nil {
+	// 				if dayInMonthSTR == "-1" {
+	// 					dayInMonthINT = 31
+	// 				} else if dayInMonthSTR == "-2" {
+	// 					dayInMonthINT = 30
+	// 				} else {
+	// 					return "", errors.New("неверный формат дня")
+	// 				}
+	// 			} else if dayInMonthINT < 1 || dayInMonthINT > 31 {
+	// 				return "", errors.New("неверный формат дня")
+	// 			}
+	// 			dayDone = append(dayDone, dayInMonthINT)
 	// 		}
 
-	// 		if day == -1 {
-	// 			// Handle last day of the month
-	// 		} else if day == -2 {
-	// 			// Handle second to last day of the month
-	// 		} else if day < 1 || day > 31 {
-	// 			return "", errors.New("недопустимое значение дня месяца")
-	// 		}
-	// 	}
+	// 		sort.Ints(dayDone)
 
-	// 	for _, monthStr := range monthArgs {
-	// 		month, err := strconv.Atoi(monthStr)
-	// 		if err != nil || month < 1 || month > 12 {
-	// 			return "", errors.New("недопустимое значение месяца")
+	// 		var monthDone []int
+	// 		if len(repeatParts) == 3 {
+	// 			monthArgs := strings.Split(repeatParts[2], ",")
+	// 			for _, monthInYearSTR := range monthArgs {
+	// 				monthInYearINT, err := strconv.Atoi(monthInYearSTR)
+	// 				if err != nil || monthInYearINT < 1 || monthInYearINT > 12 {
+	// 					return "", errors.New("неверный формат месяца")
+	// 				}
+	// 				monthDone = append(monthDone, monthInYearINT)
+	// 			}
 	// 		}
-	// }
+
+	// 		sort.Ints(monthDone)
+
+	// 		for _, dayNext := range dayDone {
+	// 			for startDate.Day() != dayNext {
+	// 				startDate = startDate.AddDate(0, 0, 1)
+	// 				if startDate.Month() != now.Month() {
+	// 					startDate = time.Date(startDate.Year(), startDate.Month(), dayNext, 0, 0, 0, 0, startDate.Location())
+	// 					break
+	// 				}
+	// 			}
+
+	// 			if startDate.After(now) {
+	// 				break
+	// 			}
+	// 		}
+
+	// 	default:
+	// 		return "", errors.New("неподдерживаемый формат")
+	// 	}
 
 	default:
 		return "", errors.New("неподдерживаемый формат")

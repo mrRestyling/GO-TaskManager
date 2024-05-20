@@ -14,6 +14,7 @@ var (
 	errGetId             = errors.New("не удалось получить задачу по id")
 	errGetTasks          = errors.New("не указан идентификатор задач")
 	errWrongTaskIDFormat = errors.New("неверный формат идентификатора задачи")
+	errWrongPassword     = errors.New("ошибка авторизации")
 )
 
 func ResponseWithErrorJSON(w http.ResponseWriter, status int, err error) {
