@@ -6,29 +6,33 @@ import (
 	"strconv"
 )
 
+// GetTaskByID возвращает задачу по ID
 func (h *Handler) GetTaskByID(w http.ResponseWriter, r *http.Request) {
 	taskID := r.URL.Query().Get("id")
 
+	// Проверяем, что запрос содержит ID
 	if taskID == "" {
 		ResponseWithErrorJSON(w, http.StatusBadRequest, errGetTasks)
 		return
 	}
 
+	// Парсим ID
 	numTaskID, err := strconv.Atoi(taskID)
 	if err != nil {
 		ResponseWithErrorJSON(w, http.StatusBadRequest, err)
 	}
 
+	// Пытаемся получить задачу по ID
 	task, err := h.Db.TaskByID(numTaskID)
-
 	if err != nil {
 		ResponseWithErrorJSON(w, http.StatusInternalServerError, errGetId)
 		return
 	}
+
+	// Конвертируем ответ в JSON
 	jsonResponse, err := json.Marshal(task)
 	if err != nil {
 		ResponseWithErrorJSON(w, http.StatusInternalServerError, err)
-		// http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

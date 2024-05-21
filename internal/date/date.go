@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// Функция для вычисления следующей даты
+// NextDate - функция для вычисления следующей даты
 func NextDate(now time.Time, date string, repeat string) (string, error) {
 	startDate, err := time.Parse("20060102", date)
 	if err != nil {
@@ -19,8 +19,11 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 		return "", errors.New("нет значения повтора")
 	}
 
+	// Разделяем строку повтора на части
 	repeatParts := strings.Split(repeat, " ")
 
+	// В зависимости от первой буквы (d - дни, y - год, w - неделя, m - месяц)
+	// используем соответствующий вычислитель
 	switch repeatParts[0] {
 	case "d":
 		if len(repeatParts) != 2 {
@@ -168,10 +171,12 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 	// 		return "", errors.New("неподдерживаемый формат")
 	// 	}
 
+	// Если первым параметром передан неизвестный формат, то возвращаем ошибку
 	default:
 		return "", errors.New("неподдерживаемый формат")
 	}
 
+	// Возвращаем дату
 	return startDate.Format("20060102"), nil
 
 }

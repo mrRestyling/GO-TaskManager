@@ -6,6 +6,7 @@ import (
 	"strconv"
 )
 
+// DeleteTask удаляет задачу по ID
 func (h *Handler) DeleteTask(w http.ResponseWriter, r *http.Request) {
 	task := models.Task{}
 	task.ID = r.URL.Query().Get("id")
@@ -15,23 +16,28 @@ func (h *Handler) DeleteTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Парсим ID
 	numTaskID, err := strconv.Atoi(task.ID)
 	if err != nil {
 		ResponseWithErrorJSON(w, http.StatusBadRequest, err)
 		return
 	}
 
+	// Пытаемся получить задачу по ID
 	task, err = h.Db.TaskByID(numTaskID)
 	if err != nil {
 		ResponseWithErrorJSON(w, http.StatusInternalServerError, err)
 		return
 	}
+
+	// Удаляем задачу
 	err = h.Db.DoneTasksDB(numTaskID)
 	if err != nil {
 		ResponseWithErrorJSON(w, http.StatusInternalServerError, err)
 		return
 	}
 
+	// Отправляем ответ с пустым телом
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{}`))

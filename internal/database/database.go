@@ -16,6 +16,7 @@ type Database struct {
 	Db *sql.DB
 }
 
+// New создает новый экземпляр базы данных
 func New() (*Database, error) {
 
 	// *** Задание со звездочкой, переменная окружения
@@ -25,11 +26,13 @@ func New() (*Database, error) {
 	}
 	// ***
 
+	// Открываем соединение к базе данных
 	db, err := sql.Open("sqlite3", fileName)
 	if err != nil {
 		return nil, err
 	}
 
+	// Создаем таблицу (если она не создана)
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS scheduler (
         id       INTEGER PRIMARY KEY AUTOINCREMENT,
         date     CHAR(8)      NOT NULL DEFAULT "",
@@ -41,6 +44,7 @@ func New() (*Database, error) {
 		return nil, err
 	}
 
+	// Создаем индекс по полю date
 	_, err = db.Exec(`CREATE INDEX IF NOT EXISTS Date ON scheduler (date);`)
 	if err != nil {
 		return nil, err
@@ -49,17 +53,16 @@ func New() (*Database, error) {
 	return &Database{Db: db}, nil
 }
 
+// Функция для закрытия соединения
 func (d *Database) Close() error {
 	return d.Db.Close()
 }
 
+// AddTask добавляет задачу в базу данных
 func (d *Database) AddTask(task models.Task) (int, error) {
 
 	res, err := d.Db.Exec(`INSERT INTO scheduler (date, title, comment, repeat) VALUES (?, ?, ?, ?)`, task.Date, task.Title, task.Comment, task.Repeat)
 	if err != nil {
-		// return 0, errors.New("Не удалось добавить задачу")
-		// return 0, err
-		// return 0, fmt.Errorf("Не удалось добавить задачу: %w", err)
 		return 0, fmt.Errorf("не удалось добавить задачу: %v", err)
 	}
 
@@ -71,6 +74,7 @@ func (d *Database) AddTask(task models.Task) (int, error) {
 	return int(id), nil
 }
 
+// GetAllTasks возвращает все задачи из базы данных
 func (d *Database) GetAllTasks() ([]models.Task, error) {
 	tasks := []models.Task{}
 
@@ -92,7 +96,6 @@ func (d *Database) GetAllTasks() ([]models.Task, error) {
 }
 
 // TaskByID	возвращает задачу по id
-// либо возвращает ошибку
 func (d *Database) TaskByID(id int) (models.Task, error) {
 
 	task := models.Task{}
@@ -114,6 +117,7 @@ func (d *Database) UpdateTaskDB(task models.Task) error {
 	return nil
 }
 
+// DeleteTaskDB удаляет задачу из базы данных
 func (d *Database) DoneTasksDB(id int) error {
 
 	_, err := d.Db.Exec(`DELETE FROM scheduler WHERE id = ?`, id)
@@ -123,6 +127,7 @@ func (d *Database) DoneTasksDB(id int) error {
 	return nil
 }
 
+// SearchWordDB возвращает задачи по ключевому слову
 func (d *Database) SearchWordDB(title string) ([]models.Task, error) {
 	tasks := []models.Task{}
 
@@ -132,7 +137,10 @@ func (d *Database) SearchWordDB(title string) ([]models.Task, error) {
 	}
 	defer rows.Close()
 
-	for rows.Next() { // ?? метод для перебора всех строк
+	// Перебор всех строк в результате выполнения запроса к базе данных
+	// для каждой строки создается новый объект models.Task,
+	// и затем данные из строки сканируются
+	for rows.Next() {
 		task := models.Task{}
 		err = rows.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
 		if err != nil {
@@ -143,6 +151,7 @@ func (d *Database) SearchWordDB(title string) ([]models.Task, error) {
 	return tasks, nil
 }
 
+// SearchDateDB возвращает задачи по дате
 func (d *Database) SearchDateDB(date string) ([]models.Task, error) {
 	tasks := []models.Task{}
 

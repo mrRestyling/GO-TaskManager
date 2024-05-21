@@ -11,21 +11,24 @@ type TaskResponse struct {
 	Tasks []models.Task `json:"tasks"`
 }
 
+// GetTasks возвращает ближайшие задачи по дате
 func (h *Handler) GetTasks(w http.ResponseWriter, r *http.Request) {
 
 	var tasks []models.Task
 	var err error
+
+	// Получаем значение параметра search из URL-запроса и присваиваем его переменной
 	findWord := r.URL.Query().Get("search")
 
+	// Когда параметр search пустой, то возвращаем все задачи
+	// иначе возвращаем задачи указанной по дате или по слову
 	if findWord == "" {
 		tasks, err = h.Db.GetAllTasks()
 		if err != nil {
 			ResponseWithErrorJSON(w, http.StatusInternalServerError, errGetId)
 			return
 		}
-
-	} else { // проверить поиск , на формат даты , либо выдать по слову
-
+	} else {
 		searchDate, err := time.Parse("02.01.2006", findWord)
 		if err != nil {
 			tasks, err = h.Db.SearchWordDB(findWord)
@@ -41,12 +44,8 @@ func (h *Handler) GetTasks(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	// tasks, err = h.Db.GetAllTasks()
-	// tasks, err = h.Db.SearchWordDB(r.URL.Query().Get("search"))
-	// if err != nil {
-	// 	ResponseWithErrorJSON(w, http.StatusInternalServerError, err)
-	// 	return
 
+	// Конвертируем ответ в JSON
 	response := TaskResponse{
 		Tasks: tasks,
 	}

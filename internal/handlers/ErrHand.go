@@ -6,6 +6,7 @@ import (
 	"net/http"
 )
 
+// Вспомогательные ошибки
 var (
 	errWrongDateFormat   = errors.New("неправильный формат даты")
 	errWrongRepeatFormat = errors.New("неправильный формат повтора")
@@ -17,6 +18,7 @@ var (
 	errWrongPassword     = errors.New("ошибка авторизации")
 )
 
+// ResponseWithErrorJSON возвращает JSON с ошибкой
 func ResponseWithErrorJSON(w http.ResponseWriter, status int, err error) {
 	errorResponse := map[string]string{
 		"error": err.Error(),
