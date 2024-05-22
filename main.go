@@ -67,7 +67,7 @@ func main() {
 	http.HandleFunc("/api/tasks", middleware.Auth(handler.GetTasks)) // файл getAllTasks.go, каталог handlers
 
 	// Запускаем сервер на указанном порту
-	err = http.ListenAndServe("localhost:"+port, nil)
+	err = http.ListenAndServe("0.0.0.0:"+port, nil)
 	if err != nil {
 		panic(err)
 	}
