@@ -59,7 +59,7 @@ func (d *Database) Close() error {
 }
 
 // AddTask добавляет задачу в базу данных
-func (d *Database) AddTask(task models.Task) (int, error) {
+func (d *Database) AddTaskDB(task models.Task) (int, error) {
 
 	res, err := d.Db.Exec(`INSERT INTO scheduler (date, title, comment, repeat) VALUES (?, ?, ?, ?)`, task.Date, task.Title, task.Comment, task.Repeat)
 	if err != nil {
@@ -75,7 +75,7 @@ func (d *Database) AddTask(task models.Task) (int, error) {
 }
 
 // GetAllTasks возвращает все задачи из базы данных
-func (d *Database) GetAllTasks() ([]models.Task, error) {
+func (d *Database) GetAllTasksDB() ([]models.Task, error) {
 	tasks := []models.Task{}
 
 	rows, err := d.Db.Query(`SELECT * FROM scheduler ORDER BY date ASC LIMIT ?`, count)
@@ -96,7 +96,7 @@ func (d *Database) GetAllTasks() ([]models.Task, error) {
 }
 
 // TaskByID	возвращает задачу по id
-func (d *Database) TaskByID(id int) (models.Task, error) {
+func (d *Database) TaskByIdDB(id int) (models.Task, error) {
 
 	task := models.Task{}
 

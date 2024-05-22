@@ -27,7 +27,7 @@ func (h *Handler) DoneTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Пытаемся получить задачу по ID
-	task, err = h.Db.TaskByID(numTaskID)
+	task, err = h.Db.TaskByIdDB(numTaskID)
 	if err != nil {
 		ResponseWithErrorJSON(w, http.StatusInternalServerError, err)
 		return

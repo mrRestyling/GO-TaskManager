@@ -23,7 +23,7 @@ func (h *Handler) GetTasks(w http.ResponseWriter, r *http.Request) {
 	// Когда параметр search пустой, то возвращаем все задачи
 	// иначе возвращаем задачи указанной по дате или по слову
 	if findWord == "" {
-		tasks, err = h.Db.GetAllTasks()
+		tasks, err = h.Db.GetAllTasksDB()
 		if err != nil {
 			ResponseWithErrorJSON(w, http.StatusInternalServerError, errGetId)
 			return

@@ -16,6 +16,7 @@ var (
 	errGetTasks          = errors.New("не указан идентификатор задач")
 	errWrongTaskIDFormat = errors.New("неверный формат идентификатора задачи")
 	errWrongPassword     = errors.New("ошибка авторизации")
+	errUpdateDb          = errors.New("не удалось обновить задачу в базе данных")
 )
 
 // ResponseWithErrorJSON возвращает JSON с ошибкой

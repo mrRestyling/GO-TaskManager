@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// UpdateTask редактирует задачу
 func (h *Handler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 	var task models.Task
 	err := json.NewDecoder(r.Body).Decode(&task)
@@ -57,19 +58,21 @@ func (h *Handler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = h.Db.TaskByID(numTaskID)
+	_, err = h.Db.TaskByIdDB(numTaskID)
 	if err != nil {
 		ResponseWithErrorJSON(w, http.StatusInternalServerError, err)
 		return
 	}
 
+	// Обновляем задачу в базе данных
 	err = h.Db.UpdateTaskDB(task)
 	if err != nil {
-		ResponseWithErrorJSON(w, http.StatusBadRequest, err)
+		ResponseWithErrorJSON(w, http.StatusBadRequest, errUpdateDb)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8") // устанавливаем заголовок, чтобы показать, что это JSON.
+	// Возвращаем JSON-ответ
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(map[string]int{})
 	if err != nil {

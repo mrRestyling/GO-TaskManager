@@ -62,7 +62,7 @@ func (h *Handler) TaskHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Присвоение идентификатора к добавленной задаче
-	id, err := h.Db.AddTask(task)
+	id, err := h.Db.AddTaskDB(task)
 	if err != nil {
 		ResponseWithErrorJSON(w, http.StatusBadRequest, errPostId)
 		return

@@ -54,11 +54,12 @@ func LoginSign(w http.ResponseWriter, r *http.Request) {
 
 		log.Printf("Token: %s", signedToken)
 
-		// Записываем в тело ответа JWT-токен (отправляем его клиенту)
+		// Записываем в тело ответа JWT-токен
 		response := map[string]string{
 			"token": signedToken,
 		}
 
+		// Кодируем ответ в JSON и направляем клиенту
 		jsonResponse, err := json.Marshal(response)
 		if err != nil {
 			ResponseWithErrorJSON(w, http.StatusInternalServerError, err)
