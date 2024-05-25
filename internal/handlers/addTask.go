@@ -5,14 +5,15 @@ import (
 	"net/http"
 	"time"
 
-	"start/internal/database"
 	"start/internal/date"
 	"start/internal/models"
+	"start/internal/storage"
 )
 
 // Handler объявляем структуру в которой передаем ссылку на базу данных
 type Handler struct {
-	Db *database.Database
+	Db       *storage.Database
+	Password string
 }
 
 // TaskHandler добавляет задачу
@@ -26,43 +27,15 @@ func (h *Handler) TaskHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Проверка: не указан заголовок задачи
-	if task.Title == "" {
-		ResponseWithErrorJSON(w, http.StatusBadRequest, errWrongTitleFormat)
+	// Проверка: валидация задачи вынесена в отдельную функцию
+	task.Date, err = validateTask(task) // ПРАВКА !
+	if err != nil {
+		ResponseWithErrorJSON(w, http.StatusBadRequest, err)
 		return
 	}
 
-	// Проверка: дата представлена в формате, отличном от 20060102
-	if task.Date != "" {
-		_, err := time.Parse("20060102", task.Date)
-		if err != nil {
-			ResponseWithErrorJSON(w, http.StatusBadRequest, errWrongDateFormat)
-			return
-		}
-	}
-
-	// Если поле date не указано или содержит пустую строку, берётся сегодняшнее число
-	if task.Date == "" {
-		task.Date = time.Now().Format("20060102")
-	}
-
-	// 1. Подставляется сегодняшнее число, если правило повторения не указано;
-	// 2. Или подставляется следующая дата с помощью функции NextDate()
-
-	if task.Date < time.Now().Format("20060102") {
-		if task.Repeat == "" {
-			task.Date = time.Now().Format("20060102")
-		} else if task.Repeat != "" {
-			task.Date, err = date.NextDate(time.Now(), task.Date, task.Repeat)
-			if err != nil {
-				ResponseWithErrorJSON(w, http.StatusBadRequest, errWrongRepeatFormat)
-				return
-			}
-		}
-	}
-
 	// Присвоение идентификатора к добавленной задаче
-	id, err := h.Db.AddTaskDB(task)
+	id, err := h.Db.AddTask(task)
 	if err != nil {
 		ResponseWithErrorJSON(w, http.StatusBadRequest, errPostId)
 		return
@@ -80,4 +53,43 @@ func (h *Handler) TaskHandler(w http.ResponseWriter, r *http.Request) {
 		ResponseWithErrorJSON(w, http.StatusInternalServerError, err)
 		return
 	}
+}
+
+// validateTask - проверка задачи(заголовка и даты)
+func validateTask(task models.Task) (string, error) {
+
+	// Проверка: не указан заголовок задачи
+	if task.Title == "" {
+		return "", errWrongTitleFormat
+	}
+
+	// Проверка: дата представлена в формате, отличном от 20060102
+	if task.Date != "" {
+		_, err := time.Parse(models.FormatDate, task.Date) // ПРАВКА !
+		if err != nil {
+			// ResponseWithErrorJSON(w, http.StatusBadRequest, errWrongDateFormat)
+			return "", errWrongDateFormat
+		}
+	}
+
+	// Если поле date не указано или содержит пустую строку, берётся сегодняшнее число
+	if task.Date == "" {
+		task.Date = time.Now().Format(models.FormatDate)
+	}
+
+	// 1. Подставляется сегодняшнее число, если правило повторения не указано;
+	// 2. Или подставляется следующая дата с помощью функции NextDate()
+
+	if task.Date < time.Now().Format(models.FormatDate) {
+		var err error
+		if task.Repeat == "" {
+			task.Date = time.Now().Format(models.FormatDate)
+		} else if task.Repeat != "" {
+			task.Date, err = date.NextDate(time.Now(), task.Date, task.Repeat)
+			if err != nil {
+				return "", errWrongRepeatFormat
+			}
+		}
+	}
+	return task.Date, nil
 }

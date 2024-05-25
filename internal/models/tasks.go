@@ -8,3 +8,5 @@ type Task struct {
 	Comment string `json:"comment"`
 	Repeat  string `json:"repeat"`
 }
+
+var FormatDate = "20060102"

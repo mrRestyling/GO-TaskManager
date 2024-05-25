@@ -23,7 +23,7 @@ func (h *Handler) GetTasks(w http.ResponseWriter, r *http.Request) {
 	// Когда параметр search пустой, то возвращаем все задачи
 	// иначе возвращаем задачи указанной по дате или по слову
 	if findWord == "" {
-		tasks, err = h.Db.GetAllTasksDB()
+		tasks, err = h.Db.GetAll()
 		if err != nil {
 			ResponseWithErrorJSON(w, http.StatusInternalServerError, errGetId)
 			return
@@ -31,13 +31,13 @@ func (h *Handler) GetTasks(w http.ResponseWriter, r *http.Request) {
 	} else {
 		searchDate, err := time.Parse("02.01.2006", findWord)
 		if err != nil {
-			tasks, err = h.Db.SearchWordDB(findWord)
+			tasks, err = h.Db.SearchWord(findWord)
 			if err != nil {
 				ResponseWithErrorJSON(w, http.StatusInternalServerError, err)
 				return
 			}
 		} else {
-			tasks, err = h.Db.SearchDateDB(searchDate.Format("20060102"))
+			tasks, err = h.Db.SearchDate(searchDate.Format("20060102"))
 			if err != nil {
 				ResponseWithErrorJSON(w, http.StatusInternalServerError, err)
 				return

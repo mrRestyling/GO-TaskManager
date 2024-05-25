@@ -24,7 +24,7 @@ func (h *Handler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if task.Date != "" {
-		_, err := time.Parse("20060102", task.Date)
+		_, err := time.Parse(models.FormatDate, task.Date)
 		if err != nil {
 			ResponseWithErrorJSON(w, http.StatusBadRequest, errWrongDateFormat)
 			return
@@ -32,12 +32,12 @@ func (h *Handler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if task.Date == "" {
-		task.Date = time.Now().Format("20060102")
+		task.Date = time.Now().Format(models.FormatDate)
 	}
 
-	if task.Date < time.Now().Format("20060102") {
+	if task.Date < time.Now().Format(models.FormatDate) {
 		if task.Repeat == "" {
-			task.Date = time.Now().Format("20060102")
+			task.Date = time.Now().Format(models.FormatDate)
 		} else if task.Repeat != "" {
 			task.Date, err = date.NextDate(time.Now(), task.Date, task.Repeat)
 			if err != nil {
@@ -58,14 +58,14 @@ func (h *Handler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = h.Db.TaskByIdDB(numTaskID)
+	_, err = h.Db.TaskById(numTaskID)
 	if err != nil {
 		ResponseWithErrorJSON(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	// Обновляем задачу в базе данных
-	err = h.Db.UpdateTaskDB(task)
+	err = h.Db.UpdateTask(task)
 	if err != nil {
 		ResponseWithErrorJSON(w, http.StatusBadRequest, errUpdateDb)
 		return

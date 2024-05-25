@@ -4,9 +4,9 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"start/internal/database"
 	"start/internal/handlers"
 	"start/internal/middleware"
+	"start/internal/storage"
 )
 
 func main() {
@@ -19,13 +19,9 @@ func main() {
 
 	// * Аутентификация по паролю
 	password := os.Getenv("TODO_PASSWORD")
-	if password != "" {
-		log.Printf("Password: %s", password)
-		http.HandleFunc("/api/signin", handlers.LoginSign)
-	}
 
 	// Создаем подключение к БД
-	db, err := database.New()
+	db, err := storage.New()
 	if err != nil {
 		log.Println(err)
 	}
@@ -34,7 +30,13 @@ func main() {
 	// Cоздаем новый экземпляр обработчика handler и передаем ему ссылку на подключение к БД
 	// файл addTask.go, каталог handlers
 	handler := &handlers.Handler{
-		Db: db,
+		Db:       db,
+		Password: password,
+	}
+
+	if password != "" {
+		log.Printf("Password: %s", password)
+		http.HandleFunc("/api/signin", handler.LoginSign)
 	}
 
 	// Регистрируем обработчик маршрутов (связываем фронт и бэк)
@@ -68,6 +70,7 @@ func main() {
 
 	// Запускаем сервер на указанном порту
 	err = http.ListenAndServe("0.0.0.0:"+port, nil)
+	// err = http.ListenAndServe("localhost:"+port, nil)
 	if err != nil {
 		panic(err)
 	}

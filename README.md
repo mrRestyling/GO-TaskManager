@@ -23,7 +23,7 @@
 4. Параметры в tests/settings.go следует использовать:
 var Port = 7540
 var DBFile = "../scheduler.db"
-???????????    var FullNextDate = true?????????????????
+var FullNextDate = false 
 var Search = true
 var Token = *инструкция по созданию токена*
     - Для создания токена нужно явно указать пароль с помощью команды 

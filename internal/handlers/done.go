@@ -27,7 +27,7 @@ func (h *Handler) DoneTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Пытаемся получить задачу по ID
-	task, err = h.Db.TaskByIdDB(numTaskID)
+	task, err = h.Db.TaskById(numTaskID)
 	if err != nil {
 		ResponseWithErrorJSON(w, http.StatusInternalServerError, err)
 		return
@@ -37,7 +37,7 @@ func (h *Handler) DoneTask(w http.ResponseWriter, r *http.Request) {
 	// Если указан повтор для задачи, то обновляем дату
 	// с помощью функции NextDate
 	if task.Repeat == "" {
-		err = h.Db.DoneTasksDB(numTaskID)
+		err = h.Db.DoneTasks(numTaskID)
 		if err != nil {
 			ResponseWithErrorJSON(w, http.StatusInternalServerError, err)
 			return
@@ -51,7 +51,7 @@ func (h *Handler) DoneTask(w http.ResponseWriter, r *http.Request) {
 
 		// Обновляем дату
 		task.Date = nextDate
-		err = h.Db.UpdateTaskDB(task)
+		err = h.Db.UpdateTask(task)
 		if err != nil {
 			ResponseWithErrorJSON(w, http.StatusInternalServerError, err)
 			return

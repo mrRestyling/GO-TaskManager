@@ -4,14 +4,12 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
 // LoginSign - обработчик POST-запроса для входа в систему
-func LoginSign(w http.ResponseWriter, r *http.Request) {
-	log.Println("LoginSign")
+func (h *Handler) LoginSign(w http.ResponseWriter, r *http.Request) {
 
 	// Проверяем метод запроса
 	if r.Method != http.MethodPost {
@@ -34,7 +32,8 @@ func LoginSign(w http.ResponseWriter, r *http.Request) {
 
 	// Сопоставляем введённый пароль с паролем из переменной окружения
 	// если пароли совпадают, то создаем JWT токен
-	if request.Password != os.Getenv("TODO_PASSWORD") {
+	if request.Password != h.Password {
+
 		ResponseWithErrorJSON(w, http.StatusUnauthorized, errWrongPassword)
 		return
 	} else {

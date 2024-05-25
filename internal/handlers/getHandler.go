@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"start/internal/date"
+	"start/internal/models"
 )
 
 // NextDateHandler - обработчик GET-запроса для получения следующей даты
@@ -17,7 +18,7 @@ func NextDateHandler(w http.ResponseWriter, r *http.Request) {
 	repeatStr := r.URL.Query().Get("repeat")
 
 	// Парсим дату в формате "20060102"
-	now, err := time.Parse("20060102", nowStr)
+	now, err := time.Parse(models.FormatDate, nowStr)
 	if err != nil {
 		ResponseWithErrorJSON(w, http.StatusBadRequest, errWrongDateFormat)
 		return

@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 )
 
@@ -28,5 +29,10 @@ func ResponseWithErrorJSON(w http.ResponseWriter, status int, err error) {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(status)
-	w.Write(jsonResponse)
+	_, err = w.Write(jsonResponse)
+
+	if err != nil {
+		log.Println("не удалось записать ошибку в ResponseWithErrorJSON")
+		return
+	}
 }

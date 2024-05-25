@@ -24,14 +24,14 @@ func (h *Handler) DeleteTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Пытаемся получить задачу по ID
-	task, err = h.Db.TaskByIdDB(numTaskID)
+	task, err = h.Db.TaskById(numTaskID)
 	if err != nil {
 		ResponseWithErrorJSON(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	// Удаляем задачу
-	err = h.Db.DoneTasksDB(numTaskID)
+	err = h.Db.DoneTasks(numTaskID)
 	if err != nil {
 		ResponseWithErrorJSON(w, http.StatusInternalServerError, err)
 		return

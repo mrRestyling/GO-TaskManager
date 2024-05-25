@@ -1,4 +1,4 @@
-package database
+package storage
 
 import (
 	"database/sql"
@@ -10,7 +10,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-const count = 50
+const limit = 50
 
 type Database struct {
 	Db *sql.DB
@@ -59,7 +59,7 @@ func (d *Database) Close() error {
 }
 
 // AddTask добавляет задачу в базу данных
-func (d *Database) AddTaskDB(task models.Task) (int, error) {
+func (d *Database) AddTask(task models.Task) (int, error) {
 
 	res, err := d.Db.Exec(`INSERT INTO scheduler (date, title, comment, repeat) VALUES (?, ?, ?, ?)`, task.Date, task.Title, task.Comment, task.Repeat)
 	if err != nil {
@@ -74,11 +74,11 @@ func (d *Database) AddTaskDB(task models.Task) (int, error) {
 	return int(id), nil
 }
 
-// GetAllTasks возвращает все задачи из базы данных
-func (d *Database) GetAllTasksDB() ([]models.Task, error) {
+// GetAll возвращает все задачи из базы данных
+func (d *Database) GetAll() ([]models.Task, error) {
 	tasks := []models.Task{}
 
-	rows, err := d.Db.Query(`SELECT * FROM scheduler ORDER BY date ASC LIMIT ?`, count)
+	rows, err := d.Db.Query(`SELECT * FROM scheduler ORDER BY date ASC LIMIT ?`, limit)
 	if err != nil {
 		return tasks, err
 	}
@@ -92,11 +92,15 @@ func (d *Database) GetAllTasksDB() ([]models.Task, error) {
 		}
 		tasks = append(tasks, task)
 	}
+
+	if err = rows.Err(); err != nil { // обработка ошибки из rows.Err()
+		return tasks, err
+	}
 	return tasks, nil
 }
 
 // TaskByID	возвращает задачу по id
-func (d *Database) TaskByIdDB(id int) (models.Task, error) {
+func (d *Database) TaskById(id int) (models.Task, error) {
 
 	task := models.Task{}
 
@@ -109,7 +113,7 @@ func (d *Database) TaskByIdDB(id int) (models.Task, error) {
 }
 
 // UpdateTaskDB обновляет задачу в базе данных
-func (d *Database) UpdateTaskDB(task models.Task) error {
+func (d *Database) UpdateTask(task models.Task) error {
 	_, err := d.Db.Exec(`UPDATE scheduler SET date = ?, title = ?, comment = ?, repeat = ? WHERE id = ?`, task.Date, task.Title, task.Comment, task.Repeat, task.ID)
 	if err != nil {
 		return errors.New("задача не найдена")
@@ -118,7 +122,7 @@ func (d *Database) UpdateTaskDB(task models.Task) error {
 }
 
 // DeleteTaskDB удаляет задачу из базы данных
-func (d *Database) DoneTasksDB(id int) error {
+func (d *Database) DoneTasks(id int) error {
 
 	_, err := d.Db.Exec(`DELETE FROM scheduler WHERE id = ?`, id)
 	if err != nil {
@@ -128,10 +132,10 @@ func (d *Database) DoneTasksDB(id int) error {
 }
 
 // SearchWordDB возвращает задачи по ключевому слову
-func (d *Database) SearchWordDB(title string) ([]models.Task, error) {
+func (d *Database) SearchWord(title string) ([]models.Task, error) {
 	tasks := []models.Task{}
 
-	rows, err := d.Db.Query(`SELECT * FROM scheduler WHERE title LIKE ? OR comment LIKE ? ORDER BY date LIMIT ?`, "%"+title+"%", "%"+title+"%", count)
+	rows, err := d.Db.Query(`SELECT * FROM scheduler WHERE title LIKE ? OR comment LIKE ? ORDER BY date LIMIT ?`, "%"+title+"%", "%"+title+"%", limit)
 	if err != nil {
 		return tasks, err
 	}
@@ -148,14 +152,18 @@ func (d *Database) SearchWordDB(title string) ([]models.Task, error) {
 		}
 		tasks = append(tasks, task)
 	}
+
+	if err = rows.Err(); err != nil { // обработка ошибки из rows.Err()
+		return tasks, err
+	}
 	return tasks, nil
 }
 
 // SearchDateDB возвращает задачи по дате
-func (d *Database) SearchDateDB(date string) ([]models.Task, error) {
+func (d *Database) SearchDate(date string) ([]models.Task, error) {
 	tasks := []models.Task{}
 
-	rows, err := d.Db.Query(`SELECT * FROM scheduler WHERE date = ? LIMIT ?`, date, count)
+	rows, err := d.Db.Query(`SELECT * FROM scheduler WHERE date = ? LIMIT ?`, date, limit)
 	if err != nil {
 		return tasks, err
 	}

@@ -3,6 +3,7 @@ package date
 import (
 	"errors"
 	"sort"
+	"start/internal/models"
 	"strconv"
 	"strings"
 	"time"
@@ -10,11 +11,10 @@ import (
 
 // NextDate - функция для вычисления следующей даты
 func NextDate(now time.Time, date string, repeat string) (string, error) {
-	startDate, err := time.Parse("20060102", date)
+	startDate, err := time.Parse(models.FormatDate, date)
 	if err != nil {
 		return "", err
 	}
-
 	if repeat == "" {
 		return "", errors.New("нет значения повтора")
 	}
