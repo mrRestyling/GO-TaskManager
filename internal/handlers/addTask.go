@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"time"
 
@@ -26,6 +27,8 @@ func (h *Handler) TaskHandler(w http.ResponseWriter, r *http.Request) {
 		ResponseWithErrorJSON(w, http.StatusBadRequest, err)
 		return
 	}
+
+	log.Printf("Task: %+v\n", task)
 
 	// Проверка: валидация задачи вынесена в отдельную функцию
 	task.Date, err = validateTask(task) // ПРАВКА !
@@ -75,6 +78,21 @@ func validateTask(task models.Task) (string, error) {
 	// Если поле date не указано или содержит пустую строку, берётся сегодняшнее число
 	if task.Date == "" {
 		task.Date = time.Now().Format(models.FormatDate)
+	}
+
+	if len(task.Repeat) > 0 {
+		// if task.Repeat[0] != 'd' && task.Repeat[0] != 'w' && task.Repeat[0] != 'm' && task.Repeat[0] != 'y' {
+		// 	return "", errors.New("неверное правило повторения")
+		// }
+		// if task.Repeat[0] == 'd' || task.Repeat[0] == 'w' || task.Repeat[0] == 'm' {
+		// 	if len(task.Repeat) < 3 {
+		// 		return "", errors.New("неверное правило повторения")
+		// 	}
+		// }
+		_, err := date.NextDate(time.Now(), task.Date, task.Repeat)
+		if err != nil {
+			return "", errWrongRepeatFormat
+		}
 	}
 
 	// 1. Подставляется сегодняшнее число, если правило повторения не указано;

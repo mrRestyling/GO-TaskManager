@@ -2,6 +2,7 @@ package date
 
 import (
 	"errors"
+	"fmt"
 	"sort"
 	"start/internal/models"
 	"strconv"
@@ -20,7 +21,10 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 	}
 
 	// Разделяем строку повтора на части
-	repeatParts := strings.Split(repeat, " ")
+	repeatParts := strings.Split(repeat, " ") // w 1,2
+	if repeatParts[0] != "y" && len(repeatParts) < 2 {
+		return "", errors.New("неправильный формат повтора")
+	}
 
 	// В зависимости от первой буквы (d - дни, y - год, w - неделя, m - месяц)
 	// используем соответствующий вычислитель
@@ -113,70 +117,120 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 			}
 		}
 
-	case "m":
-		return "", errors.New("неподдерживаемый формат")
 	// case "m":
-	// 	switch {
-	// 	case len(repeatParts) == 2 || len(repeatParts) == 3:
+	// 	return "", errors.New("неподдерживаемый формат")
+	case "m":
 
-	// 		dayArgs := strings.Split(repeatParts[1], ",")
-	// 		var dayDone []int
-	// 		for _, dayInMonthSTR := range dayArgs {
-	// 			dayInMonthINT, err := strconv.Atoi(dayInMonthSTR)
-	// 			if err != nil {
-	// 				if dayInMonthSTR == "-1" {
-	// 					dayInMonthINT = 31
-	// 				} else if dayInMonthSTR == "-2" {
-	// 					dayInMonthINT = 30
-	// 				} else {
-	// 					return "", errors.New("неверный формат дня")
-	// 				}
-	// 			} else if dayInMonthINT < 1 || dayInMonthINT > 31 {
-	// 				return "", errors.New("неверный формат дня")
-	// 			}
-	// 			dayDone = append(dayDone, dayInMonthINT)
-	// 		}
+		// switch len(repeatParts) {
 
-	// 		sort.Ints(dayDone)
+		// case 3:
+		var dates []time.Time
+		var months []int
 
-	// 		var monthDone []int
-	// 		if len(repeatParts) == 3 {
-	// 			monthArgs := strings.Split(repeatParts[2], ",")
-	// 			for _, monthInYearSTR := range monthArgs {
-	// 				monthInYearINT, err := strconv.Atoi(monthInYearSTR)
-	// 				if err != nil || monthInYearINT < 1 || monthInYearINT > 12 {
-	// 					return "", errors.New("неверный формат месяца")
-	// 				}
-	// 				monthDone = append(monthDone, monthInYearINT)
-	// 			}
-	// 		}
+		if len(repeatParts) == 2 {
 
-	// 		sort.Ints(monthDone)
+			daysSTR := strings.Split(repeatParts[1], ",")
 
-	// 		for _, dayNext := range dayDone {
-	// 			for startDate.Day() != dayNext {
-	// 				startDate = startDate.AddDate(0, 0, 1)
-	// 				if startDate.Month() != now.Month() {
-	// 					startDate = time.Date(startDate.Year(), startDate.Month(), dayNext, 0, 0, 0, 0, startDate.Location())
-	// 					break
-	// 				}
-	// 			}
+			for _, specificDay := range daysSTR {
+				daysINT, err := strconv.Atoi(specificDay)
+				if err != nil {
+					return "", errors.New("неверный формат дня или недопустимое значение дня")
+				} else if daysINT == 31 {
+					months = []int{1, 3, 5, 7, 8, 10, 12}
+				} else if daysINT == 30 || daysINT == 29 {
+					months = []int{1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
+				} else {
+					months = []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
+				}
+			}
+			// months = []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
 
-	// 			if startDate.After(now) {
-	// 				break
-	// 			}
-	// 		}
+		} else if len(repeatParts) == 3 {
 
-	// 	default:
-	// 		return "", errors.New("неподдерживаемый формат")
-	// 	}
+			monthsSTR := strings.Split(repeatParts[2], ",")
 
-	// Если первым параметром передан неизвестный формат, то возвращаем ошибку
+			fmt.Printf("monthsSTR: %v\n", monthsSTR)
+
+			months = make([]int, len(monthsSTR))
+			for i, month := range monthsSTR {
+				months[i], err = strconv.Atoi(month)
+				if err != nil || months[i] < 1 || months[i] > 12 {
+					return "", errors.New("неверный формат месяца или недопустимое значение месяца")
+				}
+			}
+			fmt.Printf("months: %v\n", months)
+
+		}
+
+		daysSTR := strings.Split(repeatParts[1], ",")
+		fmt.Printf("daysSTR: %v\n", daysSTR)
+
+		days := make([]int, len(daysSTR))
+		for i, day := range daysSTR {
+			days[i], err = strconv.Atoi(day)
+			if err != nil {
+				return "", errors.New("неверный формат дня или недопустимое значение дня")
+			}
+			if days[i] < -2 || days[i] > 31 {
+				return "", errors.New("неверный формат дня или недопустимое значение дня")
+			}
+		}
+
+		fmt.Printf("days: %v\n", days)
+
+		for _, month := range months {
+			for _, day := range days {
+
+				var date time.Time
+
+				if day < 0 {
+					endOfMonth := time.Date(startDate.Year(), time.Month(month+1), 0, 0, 0, 0, 0, time.UTC)
+					// fmt.Printf("endOfMonth: %v\n", endOfMonth)
+					date = endOfMonth.AddDate(0, 0, day+1)
+				} else if day >= 1 {
+					date = time.Date(startDate.Year(), time.Month(month), day, 0, 0, 0, 0, time.UTC)
+				}
+				if date.Before(startDate) {
+					date = date.AddDate(1, 0, 0)
+				}
+				dates = append(dates, date)
+			}
+
+		}
+
+		// fmt.Printf("dates: %v\n", dates)
+
+		// Сортируем даты по возрастанию
+		sort.Slice(dates, func(i, j int) bool {
+			return dates[i].Before(dates[j])
+		})
+
+		// Находим следующую дату после текущей
+		var firstDateAfterParsedDate time.Time
+		for _, date := range dates {
+			if date.After(startDate) && date.After(now) { //
+				firstDateAfterParsedDate = date
+				break
+			}
+		}
+
+		if !firstDateAfterParsedDate.IsZero() {
+			if firstDateAfterParsedDate.After(now) {
+				return firstDateAfterParsedDate.Format(models.FormatDate), nil
+			} else {
+				// fmt.Println("не удалось найти следующую дату после текущей")
+				return "", errors.New("не удалось найти следующую дату после текущей")
+			}
+		} else {
+			// fmt.Println("не удалось найти следующую дату после текущей2")
+			return "", errors.New("не удалось найти следующую дату после текущей2")
+		}
+
 	default:
 		return "", errors.New("неподдерживаемый формат")
 	}
 
 	// Возвращаем дату
-	return startDate.Format("20060102"), nil
+	return startDate.Format(models.FormatDate), nil
 
 }
