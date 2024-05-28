@@ -190,7 +190,7 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 				} else if day >= 1 {
 					date = time.Date(startDate.Year(), time.Month(month), day, 0, 0, 0, 0, time.UTC)
 				}
-				if date.Before(startDate) {
+				if date.Before(now) {
 					date = date.AddDate(1, 0, 0)
 				}
 				dates = append(dates, date)
